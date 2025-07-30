@@ -1,0 +1,300 @@
+{% extends 'passencrypt/base.html' %}
+
+{% block title %}Encrypt/Decrypt Password - PassEncrypt{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">
+                <i class="fas fa-lock"></i> Password Encryption & Decryption
+            </h2>
+            <p class="text-muted">Secure your passwords with various encryption methods</p>
+        </div>
+    </div>
+</div>
+
+<!-- Result Display (if any) -->
+{% if result %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-{% if action == 'encrypted' %}success{% else %}warning{% endif %}">
+            <div class="card-header bg-{% if action == 'encrypted' %}success{% else %}warning{% endif %} text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-{% if action == 'encrypted' %}lock{% else %}unlock{% endif %}"></i>
+                    Password {{ action|title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="password-result mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span id="result-password">{{ result }}</span>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard('{{ result }}')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Your password has been successfully {{ action }}. 
+                    {% if action == 'encrypted' %}
+                        Store this encrypted version safely.
+                    {% else %}
+                        Use this decrypted password carefully.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <!-- Encryption Section -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-lock"></i> Encrypt Password</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ encrypt_form.password.id_for_label }}" class="form-label">
+                            <i class="fas fa-key"></i> Password to Encrypt
+                        </label>
+                        {{ encrypt_form.password }}
+                        <small class="form-text text-muted">Enter the password you want to encrypt</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ encrypt_form.encryption_method.id_for_label }}" class="form-label">
+                            <i class="fas fa-shield-alt"></i> Encryption Method
+                        </label>
+                        {{ encrypt_form.encryption_method }}
+                        <small class="form-text text-muted">Choose your preferred encryption method</small>
+                    </div>
+                    
+                    <div class="mb-3" id="shift-container">
+                        <label for="{{ encrypt_form.shift_amount.id_for_label }}" class="form-label">
+                            <i class="fas fa-sliders-h"></i> Shift Amount
+                        </label>
+                        {{ encrypt_form.shift_amount }}
+                        {{ encrypt_form.shift_amount.help_text|safe }}
+                    </div>
+                    
+                    <button type="submit" name="encrypt" class="btn btn-success btn-lg w-100">
+                        <i class="fas fa-lock"></i> Encrypt Password
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Encryption Method Info -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle"></i> Encryption Methods</h6>
+                <div class="encryption-info">
+                    <div class="method-description" data-method="caesar">
+                        <strong>Caesar Cipher:</strong> Shifts each letter by a fixed number of positions in the alphabet.
+                        Simple but effective for basic obfuscation.
+                    </div>
+                    <div class="method-description" data-method="reverse" style="display: none;">
+                        <strong>Reverse Text:</strong> Simply reverses the order of characters in your password.
+                        Quick and easy to remember.
+                    </div>
+                    <div class="method-description" data-method="base64" style="display: none;">
+                        <strong>Base64 Encoding:</strong> Encodes your password using Base64 encoding.
+                        Commonly used for data transmission.
+                    </div>
+                    <div class="method-description" data-method="rot13" style="display: none;">
+                        <strong>ROT13:</strong> Special case of Caesar cipher with a 13-character shift.
+                        Self-reversing encryption method.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Decryption Section -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0"><i class="fas fa-unlock"></i> Decrypt Password</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ decrypt_form.encrypted_password.id_for_label }}" class="form-label">
+                            <i class="fas fa-lock"></i> Encrypted Password
+                        </label>
+                        {{ decrypt_form.encrypted_password }}
+                        <small class="form-text text-muted">Enter the encrypted password to decrypt</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ decrypt_form.encryption_method.id_for_label }}" class="form-label">
+                            <i class="fas fa-shield-alt"></i> Encryption Method
+                        </label>
+                        {{ decrypt_form.encryption_method }}
+                        <small class="form-text text-muted">Select the method used to encrypt</small>
+                    </div>
+                    
+                    <div class="mb-3" id="decrypt-shift-container">
+                        <label for="{{ decrypt_form.shift_amount.id_for_label }}" class="form-label">
+                            <i class="fas fa-sliders-h"></i> Shift Amount
+                        </label>
+                        {{ decrypt_form.shift_amount }}
+                        {{ decrypt_form.shift_amount.help_text|safe }}
+                    </div>
+                    
+                    <button type="submit" name="decrypt" class="btn btn-warning btn-lg w-100">
+                        <i class="fas fa-unlock"></i> Decrypt Password
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Security Notice -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="alert alert-info mb-0">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-shield-alt"></i> Security Notice
+                    </h6>
+                    <p class="mb-2">
+                        <strong>Important:</strong> These encryption methods provide basic obfuscation 
+                        but are not cryptographically secure for sensitive data.
+                    </p>
+                    <ul class="mb-0">
+                        <li>Use for personal password storage only</li>
+                        <li>Remember your encryption method and shift amount</li>
+                        <li>Consider stronger encryption for critical passwords</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6><i class="fas fa-bolt"></i> Quick Actions</h6>
+                <a href="{% url 'generate' %}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-key"></i> Generate New Password
+                </a>
+                <button type="button" class="btn btn-outline-secondary me-2" onclick="clearForms()">
+                    <i class="fas fa-eraser"></i> Clear All Fields
+                </button>
+                <button type="button" class="btn btn-outline-info" onclick="location.reload()">
+                    <i class="fas fa-refresh"></i> Refresh Page
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show/hide shift amount based on encryption method
+    function toggleShiftAmount(selectElement, containerId) {
+        const container = document.getElementById(containerId);
+        const method = selectElement.value;
+        
+        if (method === 'caesar') {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+        }
+        
+        // Show method description
+        document.querySelectorAll('.method-description').forEach(desc => {
+            desc.style.display = 'none';
+        });
+        
+        const activeDesc = document.querySelector(`[data-method="${method}"]`);
+        if (activeDesc) {
+            activeDesc.style.display = 'block';
+        }
+    }
+    
+    // Clear all forms and reset page to default state
+    function clearForms() {
+        // Clear all form fields
+        document.querySelectorAll('form').forEach(form => {
+            form.reset();
+            form.classList.remove('was-validated'); // Remove validation styling
+        });
+        
+        // Clear all input fields specifically
+        document.querySelectorAll('input[type="password"], input[type="text"], input[type="number"]').forEach(input => {
+            input.value = '';
+        });
+        
+        // Reset select fields to first option
+        document.querySelectorAll('select').forEach(select => {
+            select.selectedIndex = 0;
+        });
+        
+        // Clear any displayed results
+        const resultCard = document.querySelector('.card.border-success, .card.border-warning');
+        if (resultCard) {
+            resultCard.remove();
+        }
+        
+        // Reset shift amount containers visibility
+        const encryptMethodSelect = document.getElementById('{{ encrypt_form.encryption_method.id_for_label }}');
+        const decryptMethodSelect = document.getElementById('{{ decrypt_form.encryption_method.id_for_label }}');
+        
+        if (encryptMethodSelect) {
+            toggleShiftAmount(encryptMethodSelect, 'shift-container');
+        }
+        if (decryptMethodSelect) {
+            toggleShiftAmount(decryptMethodSelect, 'decrypt-shift-container');
+        }
+        
+        // Show success message
+        showNotification('All fields cleared!', 'success');
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const encryptMethodSelect = document.getElementById('{{ encrypt_form.encryption_method.id_for_label }}');
+        const decryptMethodSelect = document.getElementById('{{ decrypt_form.encryption_method.id_for_label }}');
+        
+        if (encryptMethodSelect) {
+            encryptMethodSelect.addEventListener('change', function() {
+                toggleShiftAmount(this, 'shift-container');
+            });
+            // Trigger on load
+            toggleShiftAmount(encryptMethodSelect, 'shift-container');
+        }
+        
+        if (decryptMethodSelect) {
+            decryptMethodSelect.addEventListener('change', function() {
+                toggleShiftAmount(this, 'decrypt-shift-container');
+            });
+            // Trigger on load
+            toggleShiftAmount(decryptMethodSelect, 'decrypt-shift-container');
+        }
+    });
+    
+    // Auto-hide results after 10 minutes for security
+    {% if result %}
+    setTimeout(function() {
+        const resultElement = document.getElementById('result-password');
+        if (resultElement) {
+            resultElement.innerHTML = '<span class="text-muted"><i>Result hidden for security</i></span>';
+        }
+    }, 600000); // 10 minutes
+    {% endif %}
+</script>
+{% endblock %}

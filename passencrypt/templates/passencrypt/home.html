@@ -1,0 +1,115 @@
+{% extends 'passencrypt/base.html' %}
+
+{% block title %}PassEncrypt - Secure Password Tool{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1 class="display-4 fw-bold text-primary mb-3">
+        <i class="fas fa-shield-alt"></i> PassEncrypt
+    </h1>
+    <p class="lead text-muted">Your secure password generation and encryption toolkit</p>
+    <p class="text-muted">Generate strong passwords and encrypt them securely - all client-side processing!</p>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Password Generator Card -->
+    <div class="col-md-6">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="feature-icon">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h4 class="card-title">Password Generator</h4>
+                <p class="card-text">
+                    Create strong, customizable passwords with various character sets and complexity options.
+                </p>
+                <ul class="list-unstyled text-start">
+                    <li><i class="fas fa-check text-success"></i> Customizable length</li>
+                    <li><i class="fas fa-check text-success"></i> Character type selection</li>
+                    <li><i class="fas fa-check text-success"></i> Predefined policies</li>
+                    <li><i class="fas fa-check text-success"></i> Exclude similar characters</li>
+                </ul>
+                <a href="{% url 'generate' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-key"></i> Generate Password
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Encryption Card -->
+    <div class="col-md-6">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="feature-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h4 class="card-title">Password Encryption</h4>
+                <p class="card-text">
+                    Encrypt and decrypt your passwords using various encryption methods for added security.
+                </p>
+                <ul class="list-unstyled text-start">
+                    <li><i class="fas fa-check text-success"></i> Caesar Cipher</li>
+                    <li><i class="fas fa-check text-success"></i> Base64 Encoding</li>
+                    <li><i class="fas fa-check text-success"></i> ROT13 Encryption</li>
+                    <li><i class="fas fa-check text-success"></i> Text Reversal</li>
+                </ul>
+                <a href="{% url 'encrypt' %}" class="btn btn-success btn-lg">
+                    <i class="fas fa-lock"></i> Encrypt/Decrypt
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Security Notice -->
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h5 class="alert-heading">
+                <i class="fas fa-info-circle"></i> Security Notice
+            </h5>
+            <p class="mb-0">
+                <strong>Privacy First:</strong> All password generation and encryption happens locally. 
+                No passwords are stored on our servers. Your data remains completely private and secure.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row text-center">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="text-primary">
+                    <i class="fas fa-shield-alt"></i>
+                </h5>
+                <h6>100% Secure</h6>
+                <small class="text-muted">No server storage</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="text-success">
+                    <i class="fas fa-bolt"></i>
+                </h5>
+                <h6>Lightning Fast</h6>
+                <small class="text-muted">Instant generation</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="text-warning">
+                    <i class="fas fa-cogs"></i>
+                </h5>
+                <h6>Highly Customizable</h6>
+                <small class="text-muted">Multiple options</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
