@@ -11,6 +11,50 @@
     <p class="text-muted">Generate strong passwords and encrypt them securely - all client-side processing!</p>
 </div>
 
+<!-- Featured Tool - Password Analysis & Salting -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-2">
+                        <div class="feature-icon">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h4 class="card-title mb-3">Password Analysis & Salting Tools</h4>
+                        <p class="card-text mb-3">
+                            Advanced password strength analysis with visual indicators, entropy calculations, 
+                            and professional-grade salting techniques for enhanced security.
+                        </p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled text-start">
+                                    <li><i class="fas fa-check text-success"></i> Strength analysis with visual meter</li>
+                                    <li><i class="fas fa-check text-success"></i> Entropy calculation & recommendations</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled text-start">
+                                    <li><i class="fas fa-check text-success"></i> Multiple salting methods</li>
+                                    <li><i class="fas fa-check text-success"></i> SHA-256 hashing option</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'password_tools' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-tools"></i><br>
+                            Analyze & Salt
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4 mb-5">
     <!-- Password Generator Card -->
     <div class="col-md-6">
@@ -69,8 +113,9 @@
                 <i class="fas fa-info-circle"></i> Security Notice
             </h5>
             <p class="mb-0">
-                <strong>Privacy First:</strong> All password generation and encryption happens locally. 
+                <strong>Privacy First:</strong> All password generation, encryption, and analysis happens locally. 
                 No passwords are stored on our servers. Your data remains completely private and secure.
+                Advanced analysis and salting features process everything client-side for maximum security.
             </p>
         </div>
     </div>
@@ -78,7 +123,7 @@
 
 <!-- Quick Stats -->
 <div class="row text-center">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card">
             <div class="card-body">
                 <h5 class="text-primary">
@@ -89,7 +134,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card">
             <div class="card-body">
                 <h5 class="text-success">
@@ -100,14 +145,25 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card">
             <div class="card-body">
                 <h5 class="text-warning">
                     <i class="fas fa-cogs"></i>
                 </h5>
-                <h6>Highly Customizable</h6>
-                <small class="text-muted">Multiple options</small>
+                <h6>Advanced Tools</h6>
+                <small class="text-muted">Strength & salting</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="text-info">
+                    <i class="fas fa-code"></i>
+                </h5>
+                <h6>REST API</h6>
+                <small class="text-muted">Full API access</small>
             </div>
         </div>
     </div>

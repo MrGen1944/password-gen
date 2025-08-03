@@ -94,3 +94,44 @@ class PasswordStrengthResponseSerializer(serializers.Serializer):
     has_numbers = serializers.BooleanField()
     has_symbols = serializers.BooleanField()
     recommendations = serializers.ListField(child=serializers.CharField())
+
+class PasswordSaltingRequestSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=200)
+    salt_method = serializers.ChoiceField(choices=[
+        ('prefix', 'Prefix Salt'),
+        ('suffix', 'Suffix Salt'),
+        ('sandwich', 'Sandwich Salt'),
+    ])
+    custom_salt = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    salt_length = serializers.IntegerField(min_value=4, max_value=32, default=16)
+    hash_result = serializers.BooleanField(default=False)
+
+class PasswordSaltingResponseSerializer(serializers.Serializer):
+    original_password = serializers.CharField()
+    salt = serializers.CharField()
+    salt_method = serializers.CharField()
+    salted_password = serializers.CharField()
+    final_result = serializers.CharField()
+    is_hashed = serializers.BooleanField()
+    strength_improvement = serializers.DictField()
+    timestamp = serializers.DateTimeField()
+
+class SaltGenerationRequestSerializer(serializers.Serializer):
+    length = serializers.IntegerField(min_value=4, max_value=64, default=16)
+    custom_characters = serializers.CharField(max_length=200, required=False, allow_blank=True)
+
+class SaltGenerationResponseSerializer(serializers.Serializer):
+    salt = serializers.CharField()
+    length = serializers.IntegerField()
+    timestamp = serializers.DateTimeField()
+
+class PasswordStrengthAnalysisResponseSerializer(serializers.Serializer):
+    password_length = serializers.IntegerField()
+    strength_level = serializers.CharField()
+    strength_percentage = serializers.IntegerField()
+    entropy = serializers.FloatField()
+    character_analysis = serializers.DictField()
+    security_analysis = serializers.DictField()
+    recommendations = serializers.ListField(child=serializers.CharField())
+    score = serializers.IntegerField()
+    timestamp = serializers.DateTimeField()

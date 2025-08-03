@@ -23,6 +23,9 @@ urlpatterns = [
     path('encrypt/', encrypt_password_api, name='api_encrypt_password'),
     path('decrypt/', decrypt_password_api, name='api_decrypt_password'),
     path('strength/', check_password_strength_api, name='api_password_strength'),
+    path('analyze/', analyze_password_strength_api, name='api_analyze_strength'),
+    path('salt/', salt_password_api, name='api_salt_password'),
+    path('generate-salt/', generate_salt_api, name='api_generate_salt'),
     
     # CRUD endpoints
     path('policies/', PasswordPolicyListCreateView.as_view(), name='api_password_policies'),

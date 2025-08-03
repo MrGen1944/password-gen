@@ -11,6 +11,8 @@ import re
 from .models import PasswordPolicy, EncryptionMethod, UsageLog
 from .serializers import *
 from .utils import generate_password_from_form, encrypt_password, decrypt_password, log_usage
+from .utils import analyze_password_strength, generate_salt, apply_salt, hash_password
+
 
 # Custom throttle classes
 class PasswordGenerationThrottle(UserRateThrottle):
@@ -223,14 +225,28 @@ def api_info(request):
     """
     info = {
         'name': 'PassEncrypt API',
-        'version': '1.0.0',
-        'description': 'RESTful API for password generation and encryption',
+        'version': '1.1.0', 
+        'description': 'RESTful API for password generation, encryption, and analysis',
+        'new_features': {
+            'v1.1.0': [
+                'Password strength analysis',
+                'Password salting with multiple methods',
+                'Salt generation',
+                'Enhanced security recommendations',
+                'Entropy calculations'
+            ]
+        },
         'endpoints': {
             'authentication': '/api/auth/',
             'password_generation': '/api/generate/',
             'password_encryption': '/api/encrypt/',
             'password_decryption': '/api/decrypt/',
             'password_strength': '/api/strength/',
+            # NEW ENDPOINTS
+            'password_analysis': '/api/analyze/',
+            'password_salting': '/api/salt/',
+            'salt_generation': '/api/generate-salt/',
+            # CRUD ENDPOINTS
             'password_policies': '/api/policies/',
             'encryption_methods': '/api/methods/',
             'usage_logs': '/api/logs/',
@@ -310,3 +326,138 @@ def calculate_password_strength(password):
         'has_symbols': has_symbols,
         'recommendations': recommendations
     }
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def analyze_password_strength_api(request):
+    """
+    Comprehensive password strength analysis API endpoint.
+    """
+    serializer = PasswordStrengthRequestSerializer(data=request.data)
+    
+    if not serializer.is_valid():
+        return Response({
+            'error': 'Invalid request data',
+            'details': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    password = serializer.validated_data['password']
+    analysis = analyze_password_strength(password)
+    
+    log_usage('api_strength_analysis', request)
+    
+    return Response({
+        'password_length': analysis['length'],
+        'strength_level': analysis['strength_level'],
+        'strength_percentage': analysis['strength_percentage'],
+        'entropy': round(analysis['entropy'], 2),
+        'character_analysis': {
+            'has_uppercase': analysis['has_uppercase'],
+            'has_lowercase': analysis['has_lowercase'],
+            'has_numbers': analysis['has_numbers'],
+            'has_symbols': analysis['has_symbols'],
+            'has_spaces': analysis['has_spaces'],
+            'unique_characters': analysis['unique_chars'],
+        },
+        'security_analysis': {
+            'has_sequential': analysis['has_sequential'],
+            'has_repeated_patterns': analysis['has_repeated_patterns'],
+            'has_keyboard_patterns': analysis['has_keyboard_patterns'],
+        },
+        'recommendations': analysis['recommendations'],
+        'score': analysis['score'],
+        'timestamp': timezone.now()
+    }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+@throttle_classes([EncryptionThrottle, AnonRateThrottle])
+def salt_password_api(request):
+    """
+    Apply salt to password using specified method.
+    """
+    serializer = PasswordSaltingRequestSerializer(data=request.data)
+    
+    if not serializer.is_valid():
+        return Response({
+            'error': 'Invalid request data',
+            'details': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    data = serializer.validated_data
+    
+    try:
+        # Generate or use custom salt
+        if data.get('custom_salt'):
+            salt = data['custom_salt']
+        else:
+            salt = generate_salt(data.get('salt_length', 16))
+        
+        # Apply salt
+        salted_password = apply_salt(data['password'], salt, data['salt_method'])
+        
+        # Hash if requested
+        final_result = salted_password
+        if data.get('hash_result', False):
+            final_result = hash_password(salted_password)
+        
+        # Analyze strength of salted password
+        strength_analysis = analyze_password_strength(salted_password)
+        
+        log_usage('api_password_salting', request)
+        
+        return Response({
+            'original_password': data['password'],
+            'salt': salt,
+            'salt_method': data['salt_method'],
+            'salted_password': salted_password,
+            'final_result': final_result,
+            'is_hashed': data.get('hash_result', False),
+            'strength_improvement': {
+                'original_length': len(data['password']),
+                'salted_length': len(salted_password),
+                'strength_level': strength_analysis['strength_level'],
+                'entropy': round(strength_analysis['entropy'], 2)
+            },
+            'timestamp': timezone.now()
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Salting failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def generate_salt_api(request):
+    """
+    Generate a cryptographically secure salt.
+    """
+    serializer = SaltGenerationRequestSerializer(data=request.data)
+    
+    if not serializer.is_valid():
+        return Response({
+            'error': 'Invalid request data',
+            'details': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    data = serializer.validated_data
+    
+    try:
+        salt = generate_salt(
+            length=data.get('length', 16),
+            custom_chars=data.get('custom_characters')
+        )
+        
+        log_usage('api_salt_generation', request)
+        
+        return Response({
+            'salt': salt,
+            'length': len(salt),
+            'timestamp': timezone.now()
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Salt generation failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

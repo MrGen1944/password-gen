@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from .forms import PasswordGeneratorForm, PasswordEncryptForm, PasswordDecryptForm
+from .forms import PasswordGeneratorForm, PasswordEncryptForm, PasswordDecryptForm, PasswordSaltingForm, PasswordStrengthForm
 from .utils import generate_password_from_form, encrypt_password, decrypt_password, log_usage
 from .models import PasswordPolicy
+from .utils import analyze_password_strength, generate_salt, apply_salt, hash_password, calculate_time_to_crack
+
 
 def home(request):
     return render(request, 'passencrypt/home.html')
@@ -100,3 +102,59 @@ def encrypt_password_view(request):
         'action': action
     })
 
+def password_tools(request):
+    """Main password tools page with strength analysis and salting"""
+    strength_form = PasswordStrengthForm()
+    salting_form = PasswordSaltingForm()
+    
+    strength_analysis = None
+    salted_result = None
+    
+    if request.method == 'POST':
+        if 'analyze_strength' in request.POST:
+            strength_form = PasswordStrengthForm(request.POST)
+            if strength_form.is_valid():
+                password = strength_form.cleaned_data['password']
+                strength_analysis = analyze_password_strength(password)
+                strength_analysis['crack_time'] = calculate_time_to_crack(password)
+                log_usage('strength_analysis', request)
+        
+        elif 'apply_salt' in request.POST:
+            salting_form = PasswordSaltingForm(request.POST)
+            if salting_form.is_valid():
+                password = salting_form.cleaned_data['password']
+                salt_method = salting_form.cleaned_data['salt_method']
+                custom_salt = salting_form.cleaned_data['custom_salt']
+                salt_length = salting_form.cleaned_data['salt_length']
+                hash_result = salting_form.cleaned_data['hash_result']
+                
+                # Generate or use custom salt
+                if custom_salt:
+                    salt = custom_salt
+                else:
+                    salt = generate_salt(salt_length)
+                
+                # Apply salt
+                salted_password = apply_salt(password, salt, salt_method)
+                
+                # Hash if requested
+                final_result = hash_password(salted_password) if hash_result else salted_password
+                
+                salted_result = {
+                    'original_password': password,
+                    'salt': salt,
+                    'salt_method': salt_method,
+                    'salted_password': salted_password,
+                    'final_result': final_result,
+                    'is_hashed': hash_result,
+                    'strength_analysis': analyze_password_strength(salted_password)
+                }
+                
+                log_usage('password_salting', request)
+    
+    return render(request, 'passencrypt/password_tools.html', {
+        'strength_form': strength_form,
+        'salting_form': salting_form,
+        'strength_analysis': strength_analysis,
+        'salted_result': salted_result
+    })
