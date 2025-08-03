@@ -60,6 +60,11 @@ Complete RESTful API with endpoints for:
    
    # Mac/Linux
    source password_tool_env/bin/activate
+
+   # VScode
+   Ctr + Shift + P
+   lookup "Python: Select Interpreter"
+   Create a virtual environment
    ```
 
 3. **Install dependencies**
